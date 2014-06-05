@@ -559,7 +559,7 @@ retry:
         nframes);
   }
 
-  if (!gst_amc_codec_release_output_buffer (self->codec, idx, &err)) {
+  if (!gst_amc_codec_release_output_buffer (self->codec, idx, FALSE, &err)) {
     if (self->flushing) {
       g_clear_error (&err);
       goto flushing;
@@ -705,7 +705,7 @@ invalid_buffer_size:
   {
     GST_ELEMENT_ERROR (self, LIBRARY, FAILED, (NULL),
         ("Invalid buffer size %u (bfp %d)", buffer_info.size, self->info.bpf));
-    gst_amc_codec_release_output_buffer (self->codec, idx, &err);
+    gst_amc_codec_release_output_buffer (self->codec, idx, FALSE, &err);
     if (err && !self->flushing)
       GST_ELEMENT_WARNING_FROM_ERROR (self, err);
     g_clear_error (&err);
@@ -724,7 +724,7 @@ failed_allocate:
   {
     GST_ELEMENT_ERROR (self, LIBRARY, SETTINGS, (NULL),
         ("Failed to allocate output buffer"));
-    gst_amc_codec_release_output_buffer (self->codec, idx, &err);
+    gst_amc_codec_release_output_buffer (self->codec, idx, FALSE, &err);
     if (err && !self->flushing)
       GST_ELEMENT_WARNING_FROM_ERROR (self, err);
     g_clear_error (&err);
@@ -932,7 +932,7 @@ gst_amc_audio_dec_set_format (GstAudioDecoder * decoder, GstCaps * caps)
       GST_STR_NULL (format_string));
   g_free (format_string);
 
-  if (!gst_amc_codec_configure (self->codec, format, 0, &err)) {
+  if (!gst_amc_codec_configure (self->codec, format, NULL, 0, &err)) {
     GST_ERROR_OBJECT (self, "Failed to configure codec");
     GST_ELEMENT_ERROR_FROM_ERROR (self, err);
     return FALSE;

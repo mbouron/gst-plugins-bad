@@ -165,8 +165,8 @@ gst_amc_codec_free (GstAmcCodec * codec)
 }
 
 gboolean
-gst_amc_codec_configure (GstAmcCodec * codec, GstAmcFormat * format, gint flags,
-    GError ** err)
+gst_amc_codec_configure (GstAmcCodec * codec, GstAmcFormat * format,
+    jobject surface, gint flags, GError ** err)
 {
   JNIEnv *env;
 
@@ -175,7 +175,7 @@ gst_amc_codec_configure (GstAmcCodec * codec, GstAmcFormat * format, gint flags,
 
   env = gst_amc_jni_get_env ();
   return gst_amc_jni_call_void_method (env, err, codec->object,
-      media_codec.configure, format->object, NULL, NULL, flags);
+      media_codec.configure, format->object, surface, NULL, flags);
 }
 
 GstAmcFormat *
@@ -416,7 +416,7 @@ gst_amc_codec_queue_input_buffer (GstAmcCodec * codec, gint index,
 
 gboolean
 gst_amc_codec_release_output_buffer (GstAmcCodec * codec, gint index,
-    GError ** err)
+    gboolean render, GError ** err)
 {
   JNIEnv *env;
 
@@ -424,7 +424,7 @@ gst_amc_codec_release_output_buffer (GstAmcCodec * codec, gint index,
 
   env = gst_amc_jni_get_env ();
   return gst_amc_jni_call_void_method (env, err, codec->object,
-      media_codec.release_output_buffer, index, JNI_FALSE);
+      media_codec.release_output_buffer, index, render);
 }
 
 GstAmcFormat *
