@@ -1050,7 +1050,7 @@ process_buffer:
   flow_ret =
       gst_amc_video_enc_handle_output_frame (self, buf, &buffer_info, frame);
 
-  if (!gst_amc_codec_release_output_buffer (self->codec, idx, &err)) {
+  if (!gst_amc_codec_release_output_buffer (self->codec, idx, FALSE, &err)) {
     if (self->flushing) {
       g_clear_error (&err);
       goto flushing;
@@ -1330,7 +1330,7 @@ gst_amc_video_enc_set_format (GstVideoEncoder * encoder,
       GST_STR_NULL (format_string));
   g_free (format_string);
 
-  if (!gst_amc_codec_configure (self->codec, format, 1, &err)) {
+  if (!gst_amc_codec_configure (self->codec, format, NULL, 1, &err)) {
     GST_ERROR_OBJECT (self, "Failed to configure codec");
     GST_ELEMENT_ERROR_FROM_ERROR (self, err);
     goto quit;

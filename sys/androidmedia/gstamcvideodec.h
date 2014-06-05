@@ -22,10 +22,13 @@
 #define __GST_AMC_VIDEO_DEC_H__
 
 #include <gst/gst.h>
+#include <gst/gl/gl.h>
 
 #include <gst/video/gstvideodecoder.h>
 
 #include "gstamc.h"
+#include "gstamcsurface.h"
+#include "gstamc2dtexturerenderer.h"
 
 G_BEGIN_DECLS
 
@@ -44,6 +47,14 @@ G_BEGIN_DECLS
 
 typedef struct _GstAmcVideoDec GstAmcVideoDec;
 typedef struct _GstAmcVideoDecClass GstAmcVideoDecClass;
+typedef enum _GstAmcCodecConfig GstAmcCodecConfig;
+
+enum _GstAmcCodecConfig
+{
+  AMC_CODEC_CONFIG_NONE,
+  AMC_CODEC_CONFIG_WITH_SURFACE,
+  AMC_CODEC_CONFIG_WITHOUT_SURFACE,
+};
 
 struct _GstAmcVideoDec
 {
@@ -51,6 +62,8 @@ struct _GstAmcVideoDec
 
   /* < private > */
   GstAmcCodec *codec;
+  GstAmcCodecConfig codec_config;
+
   GstAmcBuffer *input_buffers, *output_buffers;
   gsize n_input_buffers, n_output_buffers;
 
@@ -60,6 +73,10 @@ struct _GstAmcVideoDec
   /* Output format of the codec */
   GstVideoFormat format;
   GstAmcColorFormatInfo color_format_info;
+
+  /* Output dimensions */
+  guint width;
+  guint height;
 
   guint8 *codec_data;
   gsize codec_data_size;
@@ -78,7 +95,17 @@ struct _GstAmcVideoDec
   /* TRUE if the component is drained currently */
   gboolean drained;
 
+  GstAmcSurface *surface;
+
+  GstGLContext *gl_context;
+  GstAmc2DTextureRenderer *renderer;
+
+  gboolean downstream_supports_gl;
   GstFlowReturn downstream_flow_ret;
+
+  GMutex on_frame_available_lock;
+  GCond on_frame_available_cond;
+  gboolean on_frame_available;
 };
 
 struct _GstAmcVideoDecClass
