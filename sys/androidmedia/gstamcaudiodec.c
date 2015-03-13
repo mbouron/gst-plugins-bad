@@ -689,7 +689,8 @@ flow_error:
 invalid_buffer_index:
   {
     GST_ELEMENT_ERROR (self, LIBRARY, FAILED, (NULL),
-        ("Invalid input buffer index %d of %d", idx, self->n_input_buffers));
+        ("Invalid input buffer index %d of %" G_GSIZE_FORMAT, idx,
+            self->n_input_buffers));
     gst_pad_push_event (GST_AUDIO_DECODER_SRC_PAD (self), gst_event_new_eos ());
     gst_pad_pause_task (GST_AUDIO_DECODER_SRC_PAD (self));
     self->downstream_flow_ret = GST_FLOW_ERROR;
@@ -1185,7 +1186,8 @@ downstream_error:
 invalid_buffer_index:
   {
     GST_ELEMENT_ERROR (self, LIBRARY, FAILED, (NULL),
-        ("Invalid input buffer index %d of %d", idx, self->n_input_buffers));
+        ("Invalid input buffer index %d of %" G_GSIZE_FORMAT, idx,
+            self->n_input_buffers));
     if (minfo.data)
       gst_buffer_unmap (inbuf, &minfo);
     if (inbuf)
@@ -1285,7 +1287,7 @@ gst_amc_audio_dec_drain (GstAmcAudioDec * self)
     g_mutex_unlock (&self->drain_lock);
     GST_AUDIO_DECODER_STREAM_LOCK (self);
   } else if (idx >= self->n_input_buffers) {
-    GST_ERROR_OBJECT (self, "Invalid input buffer index %d of %d",
+    GST_ERROR_OBJECT (self, "Invalid input buffer index %d of %" G_GSIZE_FORMAT,
         idx, self->n_input_buffers);
     ret = GST_FLOW_ERROR;
   } else {

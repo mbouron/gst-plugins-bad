@@ -568,8 +568,9 @@ gst_amc_video_dec_fill_buffer (GstAmcVideoDec * self, gint idx,
   gboolean ret = FALSE;
 
   if (idx >= self->n_output_buffers) {
-    GST_ERROR_OBJECT (self, "Invalid output buffer index %d of %d",
-        idx, self->n_output_buffers);
+    GST_ERROR_OBJECT (self,
+        "Invalid output buffer index %d of %" G_GSIZE_FORMAT, idx,
+        self->n_output_buffers);
     goto done;
   }
   buf = &self->output_buffers[idx];
@@ -1299,7 +1300,8 @@ downstream_error:
 invalid_buffer_index:
   {
     GST_ELEMENT_ERROR (self, LIBRARY, FAILED, (NULL),
-        ("Invalid input buffer index %d of %d", idx, self->n_input_buffers));
+        ("Invalid input buffer index %d of %" G_GSIZE_FORMAT, idx,
+            self->n_input_buffers));
     if (minfo.data)
       gst_buffer_unmap (frame->input_buffer, &minfo);
     gst_video_codec_frame_unref (frame);
@@ -1405,7 +1407,7 @@ gst_amc_video_dec_drain (GstAmcVideoDec * self)
     g_mutex_unlock (&self->drain_lock);
     GST_VIDEO_DECODER_STREAM_LOCK (self);
   } else if (idx >= self->n_input_buffers) {
-    GST_ERROR_OBJECT (self, "Invalid input buffer index %d of %d",
+    GST_ERROR_OBJECT (self, "Invalid input buffer index %d of %" G_GSIZE_FORMAT,
         idx, self->n_input_buffers);
     ret = GST_FLOW_ERROR;
   } else {
