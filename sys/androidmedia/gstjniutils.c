@@ -31,7 +31,10 @@
 #include <pthread.h>
 #include <gmodule.h>
 
+#include "gstamc.h"
 #include "gstjniutils.h"
+
+#define GST_CAT_DEFAULT gst_amc_debug
 
 static GModule *java_module;
 static jint (*get_created_java_vms) (JavaVM ** vmBuf, jsize bufLen,
@@ -491,8 +494,10 @@ check_nativehelper (void)
   gboolean ret = FALSE;
 
   module = g_module_open (NULL, G_MODULE_BIND_LOCAL);
-  if (!module)
+  if (!module) {
+    GST_WARNING ("g_module_open failure");
     return ret;
+  }
 
   /* Check if libnativehelper is loaded in the process and if
    * it has these awful wrappers for JNI_CreateJavaVM and
@@ -517,6 +522,8 @@ check_nativehelper (void)
 static gboolean
 load_java_module (const gchar * name)
 {
+  GST_DEBUG ("Trying to open module '%s'", GST_STR_NULL (name));
+
   java_module = g_module_open (name, G_MODULE_BIND_LOCAL);
   if (!java_module)
     goto load_failed;
@@ -528,6 +535,8 @@ load_java_module (const gchar * name)
   if (!g_module_symbol (java_module, "JNI_GetCreatedJavaVMs",
           (gpointer *) & get_created_java_vms))
     goto symbol_error;
+
+  GST_DEBUG ("Managed to open Java module '%s'", GST_STR_NULL (name));
 
   return TRUE;
 
@@ -565,10 +574,9 @@ gst_amc_jni_initialize_java_vm (void)
     return FALSE;
   }
 
-  if (!load_java_module (NULL)) {
-    if (!load_java_module ("libdvm"))
-      return FALSE;
-  }
+  if (!load_java_module (NULL) && !load_java_module ("libdvm")
+      && !load_java_module ("libart"))
+    return FALSE;
 
   n_vms = 0;
   if ((ret = get_created_java_vms (&java_vm, 1, &n_vms)) != JNI_OK)
