@@ -1039,8 +1039,9 @@ process_buffer:
   is_eos = ! !(buffer_info.flags & BUFFER_FLAG_END_OF_STREAM);
 
   if (idx >= self->n_output_buffers) {
-    GST_ERROR_OBJECT (self, "Invalid output buffer index %d of %d",
-        idx, self->n_output_buffers);
+    GST_ERROR_OBJECT (self,
+        "Invalid output buffer index %d of %" G_GSIZE_FORMAT, idx,
+        self->n_output_buffers);
 
     goto invalid_buffer;
   }
@@ -1562,15 +1563,17 @@ downstream_error:
 invalid_buffer_index:
   {
     GST_ELEMENT_ERROR (self, LIBRARY, FAILED, (NULL),
-        ("Invalid input buffer index %d of %d", idx, self->n_input_buffers));
+        ("Invalid input buffer index %d of %" G_GSIZE_FORMAT, idx,
+            self->n_input_buffers));
     gst_video_codec_frame_unref (frame);
     return GST_FLOW_ERROR;
   }
 buffer_fill_error:
   {
     GST_ELEMENT_ERROR (self, RESOURCE, WRITE, (NULL),
-        ("Failed to write input into the amc buffer(write %dB to a %dB buffer)",
-            self->color_format_info.frame_size, buf->size));
+        ("Failed to write input into the amc buffer(write %dB to a %"
+            G_GSIZE_FORMAT "B buffer)", self->color_format_info.frame_size,
+            buf->size));
     gst_video_codec_frame_unref (frame);
     return GST_FLOW_ERROR;
   }
@@ -1668,7 +1671,7 @@ gst_amc_video_enc_drain (GstAmcVideoEnc * self)
     g_mutex_unlock (&self->drain_lock);
     GST_VIDEO_ENCODER_STREAM_LOCK (self);
   } else if (idx >= self->n_input_buffers) {
-    GST_ERROR_OBJECT (self, "Invalid input buffer index %d of %d",
+    GST_ERROR_OBJECT (self, "Invalid input buffer index %d of %" G_GSIZE_FORMAT,
         idx, self->n_input_buffers);
     ret = GST_FLOW_ERROR;
   } else {
