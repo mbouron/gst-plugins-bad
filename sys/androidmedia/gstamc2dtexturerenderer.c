@@ -24,25 +24,31 @@
 
 #include "gstamc2dtexturerenderer.h"
 
+/* *INDENT-OFF* */
+
 static const gchar frag_COPY_OES[] =
     "#extension GL_OES_EGL_image_external : require \n"
     "precision mediump float;                       \n"
     "varying vec2 v_texcoord;                       \n"
-    "uniform samplerExternalOES tex;                \n"
+    "uniform samplerExternalOES u_tex;              \n"
     "void main (void)                               \n"
     "{                                              \n"
-    "  vec4 t = texture2D(tex, v_texcoord);         \n"
-    "  gl_FragColor = vec4(t.rgb, 1.0);             \n" "}";
+    "  vec4 t = texture2D(u_tex, v_texcoord);       \n"
+    "  gl_FragColor = vec4(t.rgb, 1.0);             \n"
+    "}";
 
 static const gchar vert_COPY_OES[] =
     "attribute vec4 a_position;                                         \n"
     "attribute vec2 a_texcoord;                                         \n"
     "varying vec2 v_texcoord;                                           \n"
-    "uniform mat4 m_transformation;                                     \n"
+    "uniform mat4 u_transformation;                                     \n"
     "void main()                                                        \n"
     "{                                                                  \n"
     "  gl_Position = a_position;                                        \n"
-    "  v_texcoord = (m_transformation * vec4(a_texcoord, 0, 1)).xy;     \n" "}";
+    "  v_texcoord = (u_transformation * vec4(a_texcoord, 0, 1)).xy;     \n"
+    "}";
+
+/* *INDENT-ON* */
 
 static void
 _surface_texture_attach_to_gl_context (GstGLContext * context,
@@ -247,7 +253,7 @@ _2d_texture_renderer_init (GstAmc2DTextureRenderer * renderer)
 
   gst_gl_shader_use (renderer->shader);
 
-  gst_gl_shader_set_uniform_1i (renderer->shader, "tex", 0);
+  gst_gl_shader_set_uniform_1i (renderer->shader, "u_tex", 0);
 
   gst_gl_context_clear_shader (renderer->context);
 
@@ -269,15 +275,14 @@ _2d_texture_renderer_draw (GstAmc2DTextureRenderer * renderer)
 
   GLint viewport_dim[4];
 
-  const GLfloat vVertices[] = { 1.0f, -1.0f, 0.0f,
-    1.0f, 0.0f,
-    -1.0f, -1.0f, 0.0f,
-    0.0f, 0.0f,
-    -1.0f, 1.0f, 0.0f,
-    0.0f, 1.0f,
-    1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f
+  /* *INDENT-OFF* */
+  const GLfloat vertices[] = {
+    1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    1.0f, 1.0f, 0.0f, 1.0f, 1.0f
   };
+  /* *INDENT-ON* */
 
   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
@@ -312,13 +317,13 @@ _2d_texture_renderer_draw (GstAmc2DTextureRenderer * renderer)
   gl->Clear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   gst_gl_shader_use (renderer->shader);
-  gst_gl_shader_set_uniform_matrix_4fv (renderer->shader, "m_transformation", 1,
+  gst_gl_shader_set_uniform_matrix_4fv (renderer->shader, "u_transformation", 1,
       FALSE, renderer->transformation_matrix);
 
-  gl->VertexAttribPointer (renderer->shader_attr_position_loc, 3,
-      GL_FLOAT, GL_FALSE, 5 * sizeof (GLfloat), vVertices);
+  gl->VertexAttribPointer (renderer->shader_attr_position_loc, 4,
+      GL_FLOAT, GL_FALSE, 5 * sizeof (GLfloat), vertices);
   gl->VertexAttribPointer (renderer->shader_attr_texture_loc, 2,
-      GL_FLOAT, GL_FALSE, 5 * sizeof (GLfloat), &vVertices[3]);
+      GL_FLOAT, GL_FALSE, 5 * sizeof (GLfloat), &vertices[3]);
 
   gl->EnableVertexAttribArray (renderer->shader_attr_position_loc);
   gl->EnableVertexAttribArray (renderer->shader_attr_texture_loc);
